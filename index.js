@@ -59,12 +59,9 @@ app.use((req, res) => {
 app.use('/api', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 app.use(errorHandler);
 
-
-
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
 
 // nurse - suraj(0) and peter(1)
 // hha - rusdra(1) and test(0)

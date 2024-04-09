@@ -10,7 +10,7 @@ const createForm = asyncHandler(async (req, res) => {
     const formattedBody = JSON.parse(JSON.stringify(req.body));
 
     // Format top-level date fields
-    ["dateInstructed", "signatureDate"].forEach(field => {
+    ["dateInstructed", "signatureDate", "dateSigned"].forEach(field => {
       if (formattedBody[field]) {
         formattedBody[field] = formatDate(formattedBody[field]);
       }
