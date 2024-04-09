@@ -47,11 +47,11 @@ const EmployeeSchema = mongoose.Schema(
     },
     relativeNameSecond: {
       type: String,
-      required: [true, `Please add the relative 2 name`],
+      // required: [true, `Please add the relative 2 name`],
     },
     relativeContactSecond: {
       type: String,
-      required: [true, `Please add the relative 2 contact no.`],
+      // required: [true, `Please add the relative 2 contact no.`],
     },
     availability: {
       type: [String],

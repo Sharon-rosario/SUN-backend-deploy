@@ -406,8 +406,7 @@ const aideCareSchema = new mongoose.Schema(
 const AideCarePlan = mongoose.model("AideCarePlan", aideCareSchema);
 
 
-const fieldCount = Object.keys(aideCareSchema.paths).length;
-console.log("Number of fields:", fieldCount);
+
 
 
 module.exports = AideCarePlan;

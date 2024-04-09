@@ -5,7 +5,8 @@ const {
   getAllTimeSheets,
   getTimeSheetById,
   updateTimeSheet,
-  deleteTimeSheet
+  deleteTimeSheet,
+  deleteFormByAssignmentId
 } = require('../../controllers/CommonFormsController/DailyTimeSheetHHAController');
 
 // Route to create a new time sheet
@@ -22,5 +23,8 @@ router.put('/:id', updateTimeSheet);
 
 // Route to delete a time sheet by ID
 router.delete('/:id', deleteTimeSheet);
+
+router.delete('/assignment/:assignmentId', deleteFormByAssignmentId);
+
 
 module.exports = router;

@@ -69,6 +69,7 @@ const createEmployee = asyncHandler(async (req, res) => {
       timeSlots,
       image,
       units,
+      company
     } = req.body;
 
     if (
@@ -124,6 +125,7 @@ const createEmployee = asyncHandler(async (req, res) => {
       timeSlots,
       image,
       units,
+      company
     });
 
     res.status(201).json({
@@ -161,6 +163,7 @@ const deleteEmployee = asyncHandler(async (req, res) => {
 
 // Update fields of employee
 const updateEmployeeInfo = asyncHandler(async (req, res) => {
+  console.log("skdfjkshdfsdfjhsdfshdfsgdfsdf")
   try {
     const { employeeId } = req.params;
     const {
@@ -490,57 +493,51 @@ const employeeSignin = asyncHandler(async (req, res) => {
 
   try {
     // Find the employee by email
-    let employee = await Employee.findOne({ email });
+    const employee = await Employee.findOne({ email }).populate('company');
 
     if (!employee) {
       return res.status(404).json({ error: "Employee not found" });
     }
 
+    // Check if the provided password matches
     const passwordMatch = employee.password === password;
     if (!passwordMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // Find the company by its name
-    const company = await Company.findOne({ company_name: companyName });
-    if (!company) {
-      return res.status(404).json({ error: "Company not found" });
+    // Check if the provided company name matches the employee's company
+    if (employee.company && employee.company.company_name !== companyName) {
+      return res.status(403).json({ error: "Invalid company" });
     }
 
-    // Update the employee with the found company's ID
-    employee.company = company._id; // Assuming company field can store multiple company
-    await employee.save();
-
+    // Generate JWT token
     const token = jwt.sign(
       { email: employee.email, userId: employee._id },
       "your-secret-key",
       { expiresIn: "1h" }
     );
 
-    // Populate the employee document with company details for the response
-    // This assumes you've refetched or otherwise have access to the populated details
-    employee = await Employee.findOne({ email }).populate({
-      path: "company",
-      select: "company_name", // Adjust according to your schema
-    });
+    // Prepare the employee response data
+    const employeeData = {
+      id: employee._id,
+      email: employee.email,
+      company: employee.company
+        ? {
+            id: employee.company._id.toString(),
+            company_name: employee.company.company_name,
+          }
+        : null,
+      role: employee.role,
+    };
 
     res.status(200).json({
       message: "Success, Employee signed in successfully",
       token,
-      employee: {
-        id: employee._id,
-        email: employee.email,
-        company: employee.company ? {
-          id: employee.company._id.toString(), // Converting ObjectId to String
-          company_name: employee.company.company_name,
-        } : null, // Handle case where company might not be populated
-        role: employee.role,
-      },
+      employee: employeeData,
     });
-    
   } catch (error) {
     console.error("Error during sign-in:", error);
-    res.status(500).json({ error: "Internal server error" , error});
+    res.status(500).json({ error: "Internal server error", error });
   }
 });
 
@@ -605,6 +602,8 @@ const employeeSignin = asyncHandler(async (req, res) => {
 
 
 // reset password
+
+
 const resetEmployeePassword = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -662,13 +661,14 @@ const setEmployeeToggle = asyncHandler(async (req, res) => {
 });
 
 const updateEmployee = async (req, res) => {
+  console.log("chahinaaz")
   try {
     const updatedEmployee = await Employee.findByIdAndUpdate(
       req.params.id,
       req.body,
       {
         new: true,
-        runValidators: true,
+        // runValidators: true,
       }
     )
     .populate("timeSlots")

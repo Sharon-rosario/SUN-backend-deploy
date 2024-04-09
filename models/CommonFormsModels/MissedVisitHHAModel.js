@@ -53,7 +53,8 @@ const missedVisitFormSchema = mongoose.Schema({
   familyOtherCaregiver: Boolean,
   patientRefusedServicesForThisDate: Date,
   shiftVisitRescheduledFor: Date,
-  careCoordinatorName: String,
+  // careCoordinatorName: String,
+  careCoordinatorSignature: String,
   careCoordinatorDate: Date,
 
   faxedCheck: Boolean,

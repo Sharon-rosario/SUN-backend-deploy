@@ -117,6 +117,32 @@ const deleteFormById = asyncHandler(async (req, res) => {
   }
 });
 
+// Delete Incident Form form by assignmentId
+const deleteFormByAssignmentId = asyncHandler(async (req, res) => {
+  console.log('delete api incident hitt');
+  try {
+    const incidentInfo = await IncidentHHAForm.findOne({
+      assignmentId: req.params.assignmentId,
+    });
+
+    if (incidentInfo) {
+      await incidentInfo.deleteOne({
+        assignmentId: req.params.assignmentId,
+      });
+      // await homeEnvFormInfo.remove();
+      res.status(200).json({
+        message: "Incident Form form with given assignmentId removed",
+      });
+    } else {
+      res.status(404).json({
+        message: "Incident Form form with given assignmentId not found",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = {
   createForm,
   getAllForms,
@@ -124,4 +150,5 @@ module.exports = {
   updateFormById,
   deleteFormById,
   getFormByAssignmentId,
+  deleteFormByAssignmentId
 };

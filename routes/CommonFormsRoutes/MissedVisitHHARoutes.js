@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {createForm, getAllForms, getFormById, updateFormById, deleteFormById, getMissedFormDataByPatientId} = require('../../controllers/CommonFormsController/missedVisitFormHHAController.js');
+const {createForm, getAllForms, getFormById, updateFormById, deleteFormById, getMissedFormDataByPatientId, deleteFormByAssignmentId} = require('../../controllers/CommonFormsController/missedVisitFormHHAController.js');
 
 router.get("/assignment/:id", getMissedFormDataByPatientId)
 // POST route for creating a new missed visit form
@@ -17,6 +17,9 @@ router.put('/:id', updateFormById);
 
 // DELETE route for deleting a missed visit form by ID
 router.delete('/:id', deleteFormById);
+
+// DELETE route for deleting a missed visit form by ID
+router.delete('/assignment/:assignmentId', deleteFormByAssignmentId);
 
 // get missed visit data based on patient id
 

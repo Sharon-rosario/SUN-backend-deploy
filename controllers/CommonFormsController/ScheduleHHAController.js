@@ -20,6 +20,41 @@ const formatTime = require('../../utils/formatTime')
 //   }
 // });
 
+// const createSchedule = asyncHandler(async (req, res) => {
+//   try {
+//     const formattedBody = { ...req.body };
+
+//     // Format weekStartingDate
+//     ['weekStartingDate'].forEach(field => {
+//       if (formattedBody[field]) {
+//         formattedBody[field] = formatDate(formattedBody[field]);
+//       }
+//     });
+
+//     // Format start and end times for each day
+//     const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+//     daysOfWeek.forEach(day => {
+//       if (formattedBody.days && formattedBody.days[day]) {
+//         const { startTime, endTime } = formattedBody.days[day];
+//         if (startTime) {
+//           formattedBody.days[day].startTime = formatTime(startTime);
+//         }
+//         if (endTime) {
+//           formattedBody.days[day].endTime = formatTime(endTime);
+//         }
+//       }
+//     });
+
+//     // Create and save the schedule
+//     const schedule = new Schedule(formattedBody);
+//     const createdSchedule = await schedule.save();
+//     res.status(200).json(createdSchedule);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// });
+
+
 const createSchedule = asyncHandler(async (req, res) => {
   try {
     const formattedBody = { ...req.body };
@@ -31,23 +66,37 @@ const createSchedule = asyncHandler(async (req, res) => {
       }
     });
 
-    // Format start and end times for each day
+    // Determine the day of the week for weekStartingDate
+    const weekStartingDate = new Date(formattedBody.weekStartingDate);
     const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayOfWeek = daysOfWeek[weekStartingDate.getDay()];
+
+    // Initialize days object if it doesn't exist
+    if (!formattedBody.days) {
+      formattedBody.days = {};
+    }
+
+    // Ensure all days are initialized to prevent undefined errors
     daysOfWeek.forEach(day => {
-      if (formattedBody.days && formattedBody.days[day]) {
-        const { startTime, endTime } = formattedBody.days[day];
-        if (startTime) {
-          formattedBody.days[day].startTime = formatTime(startTime);
-        }
-        if (endTime) {
-          formattedBody.days[day].endTime = formatTime(endTime);
-        }
+      if (!formattedBody.days[day]) {
+        formattedBody.days[day] = { startTime: null, endTime: null };
       }
     });
+
+    // Assign startTime and endTime to the specific day
+    if (formattedBody.startTime && formattedBody.endTime) {
+      formattedBody.days[dayOfWeek].startTime = formatTime(formattedBody.startTime);
+      formattedBody.days[dayOfWeek].endTime = formatTime(formattedBody.endTime);
+    }
+
+    // Remove the global startTime and endTime as they are now set per specific day
+    delete formattedBody.startTime;
+    delete formattedBody.endTime;
 
     // Create and save the schedule
     const schedule = new Schedule(formattedBody);
     const createdSchedule = await schedule.save();
+    console.log(createdSchedule)
     res.status(200).json(createdSchedule);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -176,6 +225,33 @@ const getScheduleByAssignmentId = asyncHandler(async (req, res) => {
   }
 });
 
+// Delete schedule form by assignmentId
+const deleteFormByAssignmentId = asyncHandler(async (req, res) => {
+  console.log('delete api Schedule hitt');
+  try {
+    const incidentInfo = await Schedule.findOne({
+      assignmentId: req.params.assignmentId,
+    });
+
+    if (incidentInfo) {
+      await incidentInfo.deleteOne({
+        assignmentId: req.params.assignmentId,
+      });
+      // await homeEnvFormInfo.remove();
+      res.status(200).json({
+        message: "schedule form with given assignmentId removed",
+      });
+    } else {
+      res.status(404).json({
+        message: "schedule form with given assignmentId not found",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
 
 module.exports = {
   createSchedule,
@@ -184,4 +260,5 @@ module.exports = {
   updateSchedule,
   deleteSchedule,
   getScheduleByAssignmentId,
+  deleteFormByAssignmentId
 };

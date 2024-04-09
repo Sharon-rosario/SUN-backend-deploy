@@ -4,6 +4,8 @@ const formatDate = require("../../utils/formatDate");
 
 const createForm = asyncHandler(async (req, res) => {
   try {
+
+    console.log(req.body)
     // Deep copy req.body to avoid mutating the original request object
     const formattedBody = JSON.parse(JSON.stringify(req.body));
 
@@ -114,7 +116,7 @@ const updateFormByAssignmentId = asyncHandler(async (req, res) => {
     // console.log(
     //   "updateFormByAssignmentId-home-environmental-info-Controller api hit"
     // );
-    // console.log(req.body);
+    console.log(req.body);
     const homeEnvData = await HomeEnvFormModel.findOne({ assignmentId });
     if (!homeEnvData) {
       res.status(404);

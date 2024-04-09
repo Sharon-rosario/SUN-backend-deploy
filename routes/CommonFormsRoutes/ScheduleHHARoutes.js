@@ -7,6 +7,7 @@ const {
   updateSchedule,
   deleteSchedule,
   getScheduleByAssignmentId,
+  deleteFormByAssignmentId
 } = require('../../controllers/CommonFormsController/ScheduleHHAController'); // Adjust the path according to your project structure
 
 router.get("/assignment/:id", getScheduleByAssignmentId)
@@ -25,6 +26,12 @@ router.put('/:id', updateSchedule);
 // Route to delete a PCA schedule by ID
 router.delete('/:id', deleteSchedule);
 
-// Route to get form data based on patientId
+// Route to delete form based on assignment ID
+router.delete('/assignment/:assignmentId', deleteFormByAssignmentId);
+
+// error handler indicating if we hit a non existant api
+router.use((req, res) => {
+  res.status(404).json({ message: 'API endpoint not found' });
+});
 
 module.exports = router;

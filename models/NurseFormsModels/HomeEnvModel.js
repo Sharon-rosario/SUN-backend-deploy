@@ -133,7 +133,8 @@ const homeEnvSchema = new mongoose.Schema({
   ifNoDoesPatientHaveSkilledNeeds: Boolean,
   ifYesDoesPatientGivePermission: Boolean,
 
-
+  signature: String,
+  dateSigned: Date,
 });
 
 const HomeEnvFormModel = mongoose.model("HomeEnvFormModel", homeEnvSchema);

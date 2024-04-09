@@ -97,10 +97,37 @@ const deleteTimeSheet = asyncHandler(async (req, res) => {
   res.status(200).json({ message: 'Time sheet deleted successfully' });
 });
 
+// Delete DailyTimeSheet form by assignmentId
+const deleteFormByAssignmentId = asyncHandler(async (req, res) => {
+  console.log('delete api incident hitt');
+  try {
+    const DailySheetInfo = await DailyTimeSheet.findOne({
+      assignmentId: req.params.assignmentId,
+    });
+
+    if (DailySheetInfo) {
+      await DailySheetInfo.deleteOne({
+        assignmentId: req.params.assignmentId,
+      });
+      // await homeEnvFormInfo.remove();
+      res.status(200).json({
+        message: "DailyTimeSheet form with given assignmentId removed",
+      });
+    } else {
+      res.status(404).json({
+        message: "DailyTimeSheet form with given assignmentId not found",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = {
   createTimeSheet,
   getAllTimeSheets,
   getTimeSheetById,
   updateTimeSheet,
-  deleteTimeSheet
+  deleteTimeSheet,
+  deleteFormByAssignmentId
 };

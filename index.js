@@ -1,6 +1,6 @@
 const express = require("express");
 const connectDb = require("./config/dbConnection");
-const dotenv = require("dotenv").config();
+require("dotenv").config();
 const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler");
 const swaggerUI = require('swagger-ui-express');
@@ -51,10 +51,15 @@ app.use('/api/nursing-assesment',require('./routes/NurseFormsRoutes/NursingAsses
 app.use('/api/aide-care-plan',require('./routes/NurseFormsRoutes/AideCarePlanRoutes.js'))
 app.use('/api/referral-que',require('./routes/NurseFormsRoutes/ReferralQueRoutes.js'))
 
+app.use((req, res) => {
+  res.status(404).json({ message: 'API endpoint not found' });
+});
 
 // Serve Swagger UI
 app.use('/api', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 app.use(errorHandler);
+
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
@@ -63,3 +68,8 @@ app.listen(port, () => {
 
 // nurse - suraj(0) and peter(1)
 // hha - rusdra(1) and test(0)
+
+// assignment ID that can be used for testing : 65f7eaef275c964eadedc535
+
+// const fieldCount = Object.keys(aideCareSchema.paths).length;
+// console.log("Number of fields:", fieldCount);
