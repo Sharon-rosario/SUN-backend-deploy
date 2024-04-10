@@ -2,7 +2,7 @@ const IncidentHHAForm = require("../../models/CommonFormsModels/IncidentHHAModel
 const asyncHandler = require("express-async-handler");
 const formatDate = require("../../utils/formatDate");
 const formatTime = require("../../utils/formatTime");
-
+const path = require('path');
 
 const createForm = asyncHandler(async (req, res) => {
   try {
@@ -92,6 +92,30 @@ const getFormByAssignmentId = asyncHandler(async (req, res) => {
   }
 });
 
+const getIncidentHHAImage = async (req, res) => {
+  console.log('API hit 1');
+  try {
+    const { imagePath } = req.params;
+    console.log('API hit 2');
+    const fileName = decodeURIComponent(imagePath);
+    console.log('API hit 3');
+    // Move up one directory to get out of 'controllers' and then into 'uploads'
+    const filePath = path.join(__dirname, '..', 'uploads', fileName);
+    console.log('File path:', filePath);
+    console.log('API hit 4');
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send('Error sending file.');
+      }
+    });
+    console.log('API hit 5');
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 const updateFormById = asyncHandler(async (req, res) => {
   console.log("hitttttttttttttttttt");
   try {
@@ -150,5 +174,6 @@ module.exports = {
   updateFormById,
   deleteFormById,
   getFormByAssignmentId,
-  deleteFormByAssignmentId
+  deleteFormByAssignmentId,
+  getIncidentHHAImage
 };

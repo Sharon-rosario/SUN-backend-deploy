@@ -5,20 +5,24 @@ const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler");
 const swaggerUI = require('swagger-ui-express');
 const generateSwaggerSpec = require('./swaggerOptions');
+const path = require('path');
 
 connectDb();
 const app = express();
 const port = process.env.PORT || 9000;
 const { swaggerSpec } = generateSwaggerSpec(app);
 
-app.get('/api/incident-hha/image/:filename', (req, res) => {
-  const filename = req.params.filename;
-  const imagePath = path.join(__dirname, 'uploads', filename);
-  res.sendFile(imagePath);
-});
+// app.get('/api/incident-hha/image/:filename', (req, res) => {
+//   const filename = req.params.filename;
+//   const imagePath = path.join(__dirname, 'uploads', filename);
+//   res.sendFile(imagePath);
+// });
 
 app.use(cors());
 app.use(express.json());
+// Place this line of code in your server setup, not inside the route handler.
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
 app.use("/api/admin", require("./routes/AdminRoutes.js"))
 app.use("/api/locations", require("./routes/LocationRoutes"));
 app.use("/api/units", require("./routes/UnitRoutes"));

@@ -12,18 +12,20 @@ const {
   employeeSignin,
   resetEmployeePassword,
   setEmployeeToggle,
-  updateEmployee
+  updateEmployee,
+  getEmployeeForProfilePage
 } = require("../controllers/EmployeeController");
 
+router.get("/profile/:id", getEmployeeForProfilePage)
 router.route("/toggle"). post(setEmployeeToggle)
 router.get("/fetch", fetchEmployees)
 router.get("/available", getAvailableEmployees);
 router.get("/by-timeslot", getEmployeeByTimeSlot);
+router.put("/resetPassword/", resetEmployeePassword);
 router.route("/").get(getEmployees).post(createEmployee);
 router.route("/:id").get(getEmployeeById).delete(deleteEmployee).put(updateEmployee);
 router.route("/:employeeId").put(updateEmployeeInfo);
 router.post("/signin", employeeSignin);
-router.put("/resetPassword", resetEmployeePassword);
 
 /**
  * @swagger
