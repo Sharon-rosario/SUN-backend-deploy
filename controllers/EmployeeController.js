@@ -27,6 +27,7 @@ const getEmployees = asyncHandler(async (req, res) => {
   }
 });
 
+
 // Get employee by Id
 const getEmployeeById = asyncHandler(async (req, res) => {
   try {
@@ -606,7 +607,7 @@ const employeeSignin = asyncHandler(async (req, res) => {
 
 const resetEmployeePassword = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-
+  console.log('api hit.....')
   try {
     // Check if the email exists in the Employee model
     const employee = await Employee.findOne({ email });
@@ -616,7 +617,8 @@ const resetEmployeePassword = asyncHandler(async (req, res) => {
     }
 
     // Update the password for the employee
-    employee.password = await bcrypt.hash(password, 10);
+    // employee.password = await bcrypt.hash(password, 10);
+    employee.password = password;
 
     // Save the updated employee
     await employee.save();
@@ -661,7 +663,7 @@ const setEmployeeToggle = asyncHandler(async (req, res) => {
 });
 
 const updateEmployee = async (req, res) => {
-  console.log("chahinaaz")
+  // console.log("chahinaaz")
   try {
     const updatedEmployee = await Employee.findByIdAndUpdate(
       req.params.id,
@@ -689,6 +691,36 @@ const updateEmployee = async (req, res) => {
 };
 
 
+const getEmployeeForProfilePage = asyncHandler(async (req, res) => {
+  console.log('jsdghfjhsgdfhsdf')
+  const { id } = req.params; 
+  try {
+    const employee = await Employee.findById(id, 'name email phoneNumber address image availability timeSlots').populate('timeSlots')
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    // Transform the employee's data to match your specific output format
+    const transformedEmployee = {
+      name: employee.name,
+      email: employee.email,
+      phoneNumber: employee.phoneNumber,
+      address: employee.address,
+      image: employee.image,
+      availability: employee.availability,
+      timeSlots: employee.timeSlots,
+    };
+
+    res.status(200).json(transformedEmployee);
+  } catch (error) {
+    console.error("Error fetching employee:", error);
+    res.status(500).json({ message: "Failed to fetch employee" });
+  }
+});
+
+
+
 module.exports = {
   updateEmployee,
   getEmployees,
@@ -702,4 +734,6 @@ module.exports = {
   employeeSignin,
   resetEmployeePassword,
   setEmployeeToggle,
+  getEmployeeForProfilePage,
+  // updateEmployeeForProfilePage,
 };
