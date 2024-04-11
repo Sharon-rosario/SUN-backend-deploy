@@ -72,7 +72,7 @@ const createEmployee = asyncHandler(async (req, res) => {
       timeSlots,
       image,
       units,
-      company
+      company,
     } = req.body;
 
     if (
@@ -761,71 +761,54 @@ const generateResetPasswordOTP = async (req, res) => {
 
     const mailOptions = {
       from: 'sharon@ealphabits.com',
-      to: 'sharon2002222@gmail.com',
+      to: employee.email,
       subject: 'Password Reset Request',
       html: `
-        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-        <html xmlns="http://www.w3.org/1999/xhtml">
-        <head>
-          <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <title>Password Reset Request</title>
-          <style>
-            body {
-              font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-              font-size: 16px;
-              line-height: 1.5;
-              color: #333;
-              background-color: #f5f5f5;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 0 auto;
-              padding: 40px;
-              background-color: #fff;
-              border-radius: 8px;
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            }
-            h2 {
-              color: #0056b3;
-              margin-top: 0;
-            }
-            .otp-box {
-              background-color: #f0f8ff;
-              border: 1px solid #cce5ff;
-              padding: 20px;
-              text-align: center;
-              font-size: 24px;
-              font-weight: bold;
-              color: #d63384;
-              border-radius: 4px;
-            }
-            .footer {
-              margin-top: 40px;
-              text-align: center;
-              color: #6c757d;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h2>Password Reset Request</h2>
-            <p>You are receiving this email because you (or someone else) has requested the reset of the password for your account.</p>
-            <div class="otp-box">
-              Your one-time password (OTP) is: ${otp}
+      <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>OTP Email</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body style="margin: 0; font-family: 'Poppins', sans-serif; background: #ffffff; font-size: 14px;">
+    <div style="max-width: 680px; margin: 0 auto; padding: 45px 30px 60px; background: #f4f7ff; background-image: url(https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661497957196_595865/email-template-background-banner); background-repeat: no-repeat; background-size: 800px 452px; background-position: top center; font-size: 14px; color: #434343;">
+        <header>
+            <table style="width: 100%;">
+                <tbody>
+                <tr style="height: 0;">
+                <td>
+                    <p style="margin: 0; font-size: 24px; line-height: 30px; color: #ffffff; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">Sun Home Health</p>
+                </td>
+                <td style="text-align: right;">
+                    <span style="font-size: 16px; line-height: 30px; color: #ffffff; font-weight: 600;">${new Date().toLocaleDateString()}</span>
+                </td>
+            </tr>
+                </tbody>
+            </table>
+        </header>
+
+        <main>
+            <div style="margin: 0; margin-top: 70px; padding: 92px 30px 115px; background: #ffffff; border-radius: 30px; text-align: center;">
+                <div style="width: 100%; max-width: 489px; margin: 0 auto;">
+                    <h1 style="margin: 0; font-size: 18px; font-weight: 500; color: #1f1f1f;">Password Reset Request</h1>
+                    <h1 style="margin: 0; margin-top: 17px; font-size: 32px; font-weight: 600; color: #1f1f1f;">OTP: ${otp}</h1>
+                    <p style="margin: 0; margin-top: 17px; font-size: 14px; font-weight: 400;">You are receiving this email because you (or someone else) has requested the reset of the password for your account.</p>
+                    <p style="margin: 0; margin-top: 17px; font-size: 14px; font-weight: 400;">This OTP will expire in <span style="font-weight: 600; color: #1f1f1f;">10 minutes</span>.</p>
+                    <p style="margin: 0; margin-top: 17px; font-size: 14px; font-weight: 600;">Best Regards,<br>Sun-Home-Health</p>
+                </div>
             </div>
-            <p>This OTP will expire in 10 minutes.</p>
-            <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
-            <div class="footer">
-              <p>Best Regards,</p>
-              <p>Sun-Home-Health</p>
-            </div>
-          </div>
-        </body>
-        </html>
+        </main>
+
+        <footer style="width: 100%; max-width: 490px; margin: 20px auto 0; text-align: center; border-top: 1px solid #e6ebf1;">
+            <p style="margin: 0; margin-top: 40px; font-size: 14px; color: #434343;">Copyright © ${new Date().getFullYear()} Sun-Home-Health. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
+
       `,
       text: `You are receiving this email because you (or someone else) has requested the reset of the password for your account. Your one-time password (OTP) is: ${otp} This OTP will expire in 10 minutes. If you did not request this, please ignore this email and your password will remain unchanged.`
     };
