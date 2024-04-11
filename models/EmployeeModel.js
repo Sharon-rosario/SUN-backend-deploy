@@ -67,6 +67,14 @@ const EmployeeSchema = mongoose.Schema(
     image: {
       type: String,
     },
+    resetPasswordOTP: {
+      type: String,
+      required: false
+    },
+    resetPasswordOTPExpires: {
+      type: Date,
+      required: false
+    },
     company: 
       {
         type: mongoose.Schema.Types.ObjectId,

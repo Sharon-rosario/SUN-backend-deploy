@@ -11,9 +11,7 @@ const createForm = asyncHandler(async (req, res) => {
 
     const formattedBody = { ...req.body };
 
-    if (req.file) {
-      formattedBody.diagramIndicatingInjury = req.file.path; // Store the file path as a string
-    }
+    
 
     // Format date fields
     [
@@ -51,6 +49,32 @@ const createForm = asyncHandler(async (req, res) => {
   }
 });
 
+const addImage = asyncHandler(async (req, res) => {
+  console.log("image uplaod",req.file, req.params.assignmentId );
+  try {
+    if (req.file && req.params.assignmentId) {
+      const assignmentId = req.params.assignmentId;
+      const imagePath = req.file.path; 
+      // Find the document by assignmentId (foreign key) and update it
+      const updatedIncidentHHAForm = await IncidentHHAForm.findOneAndUpdate(
+        { assignmentId: assignmentId }, 
+        { diagramIndicatingInjury: imagePath }, 
+        { new: true } 
+      );
+
+      if (!updatedIncidentHHAForm) {
+        return res.status(404).json({ message: 'IncidentHHAForm not found for the given assignmentId' });
+      }
+
+      res.json({ message: 'Image uploaded successfully', updatedIncidentHHAForm });
+    } else {
+      res.status(400).json({ message: 'Image file or assignmentId is missing' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to upload image', error: error.message });
+  }
+});
 
 const getAllForms = asyncHandler(async (req, res) => {
   try {
@@ -100,7 +124,7 @@ const getIncidentHHAImage = async (req, res) => {
     const fileName = decodeURIComponent(imagePath);
     console.log('API hit 3');
     // Move up one directory to get out of 'controllers' and then into 'uploads'
-    const filePath = path.join(__dirname, '..', 'uploads', fileName);
+    const filePath = path.join(__dirname, '..', '../uploads', fileName);
     console.log('File path:', filePath);
     console.log('API hit 4');
     res.sendFile(filePath, (err) => {
@@ -175,5 +199,6 @@ module.exports = {
   deleteFormById,
   getFormByAssignmentId,
   deleteFormByAssignmentId,
-  getIncidentHHAImage
+  getIncidentHHAImage,
+  addImage
 };

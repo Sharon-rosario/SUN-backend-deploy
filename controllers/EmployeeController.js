@@ -10,6 +10,8 @@ const jwt = require("jsonwebtoken");
 const Company = require("../models/CompanyModel");
 const ObjectId = mongoose.Types.ObjectId;
 const TimeSlot = require("../models/TimeSlotModel");
+const nodemailer = require('nodemailer');
+
 
 // Get all employee
 const getEmployees = asyncHandler(async (req, res) => {
@@ -605,37 +607,7 @@ const employeeSignin = asyncHandler(async (req, res) => {
 // reset password
 
 
-const resetEmployeePassword = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  console.log('api hit.....')
-  try {
-    // Check if the email exists in the Employee model
-    const employee = await Employee.findOne({ email });
 
-    if (!employee) {
-      return res.status(404).json({ error: "Employee not found" });
-    }
-
-    // Update the password for the employee
-    // employee.password = await bcrypt.hash(password, 10);
-    employee.password = password;
-
-    // Save the updated employee
-    await employee.save();
-
-    // Return success message
-    return res.status(200).json({
-      message: "Success, Employee password reset successfully",
-      employee: {
-        id: employee._id,
-        email: employee.email,
-      },
-    });
-  } catch (error) {
-    console.error("Error during password reset:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
 
 const setEmployeeToggle = asyncHandler(async (req, res) => {
   const employeeId = req.body.employeeId;
@@ -682,7 +654,6 @@ const updateEmployee = async (req, res) => {
 
     // Include the success message in the same JSON object as the updatedEmployee data
     res.status(200).json({
-      data: updatedEmployee,
       message: "Employee Updated Successfully"
     });
   } catch (error) {
@@ -720,6 +691,239 @@ const getEmployeeForProfilePage = asyncHandler(async (req, res) => {
 });
 
 
+// const resetEmployeePassword = asyncHandler(async (req, res) => {
+//   const { email, password } = req.body;
+//   console.log('api hit.....')
+//   try {
+//     // Check if the email exists in the Employee model
+//     const employee = await Employee.findOne({ email });
+
+//     if (!employee) {
+//       return res.status(404).json({ error: "Employee not found" });
+//     }
+
+//     // Update the password for the employee
+//     // employee.password = await bcrypt.hash(password, 10);
+//     employee.password = password;
+
+//     // Save the updated employee
+//     await employee.save();
+
+//     // Return success message
+//     return res.status(200).json({
+//       message: "Success, Employee password reset successfully",
+//       employee: {
+//         id: employee._id,
+//         email: employee.email,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Error during password reset:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
+const JWT_SECRET = 'ksjdfkjsdkfjskdjhfjksdhfhskdfjhsdjf';
+const OTP_LENGTH = 6; // Length of the OTP
+
+const generateResetPasswordOTP = async (req, res) => {
+  try {
+    // 1. Find the employee based on the email provided
+    const employee = await EmployeeModel.findOne({ email: req.body.email });
+    if (!employee) {
+      return res.status(404).json({ message: 'No employee found with that email' });
+    }
+
+    // 2. Generate a random OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit OTP
+    console.log(otp);
+    // 3. Update the employee record with the OTP and its expiration
+    employee.resetPasswordOTP = otp;
+    employee.resetPasswordOTPExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    try {
+      await employee.save();
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Error saving OTP' });
+    }
+
+    
+
+    // 4. Send the OTP to the employee's email
+    const transporter = nodemailer.createTransport({
+      // Your email transport configuration
+      service: 'gmail',
+      auth: {
+        user: 'sharon@ealphabits.com',
+        pass: 'garq gtyt qlcb fpzk'
+      }
+    });
+
+    const mailOptions = {
+      from: 'sharon@ealphabits.com',
+      to: 'sharon2002222@gmail.com',
+      subject: 'Password Reset Request',
+      html: `
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml">
+        <head>
+          <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Password Reset Request</title>
+          <style>
+            body {
+              font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+              font-size: 16px;
+              line-height: 1.5;
+              color: #333;
+              background-color: #f5f5f5;
+              margin: 0;
+              padding: 0;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 40px;
+              background-color: #fff;
+              border-radius: 8px;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            h2 {
+              color: #0056b3;
+              margin-top: 0;
+            }
+            .otp-box {
+              background-color: #f0f8ff;
+              border: 1px solid #cce5ff;
+              padding: 20px;
+              text-align: center;
+              font-size: 24px;
+              font-weight: bold;
+              color: #d63384;
+              border-radius: 4px;
+            }
+            .footer {
+              margin-top: 40px;
+              text-align: center;
+              color: #6c757d;
+              font-size: 14px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h2>Password Reset Request</h2>
+            <p>You are receiving this email because you (or someone else) has requested the reset of the password for your account.</p>
+            <div class="otp-box">
+              Your one-time password (OTP) is: ${otp}
+            </div>
+            <p>This OTP will expire in 10 minutes.</p>
+            <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
+            <div class="footer">
+              <p>Best Regards,</p>
+              <p>Sun-Home-Health</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `You are receiving this email because you (or someone else) has requested the reset of the password for your account. Your one-time password (OTP) is: ${otp} This OTP will expire in 10 minutes. If you did not request this, please ignore this email and your password will remain unchanged.`
+    };
+  
+
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Error sending OTP email' });
+    }
+
+    res.status(200).json({ message: 'OTP sent to your email' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error resetting password' });
+  }
+};
+
+const verifyOTP = async (req, res) => {
+  try {
+    // 1. Find the employee based on the OTP
+    const employee = await EmployeeModel.findOne({
+      resetPasswordOTP: req.body.otp,
+      resetPasswordOTPExpires: { $gt: Date.now() }
+    });
+
+    if (!employee) {
+      return res.status(400).json({ message: 'OTP is invalid or has expired.' });
+    }
+
+    // 2. Generate a token to authorize the password reset
+    const resetToken = jwt.sign({ email: employee.email }, JWT_SECRET, { expiresIn: '1h' });
+
+    // 3. Return the token in the response
+    res.status(200).json({ message: 'OTP verified successfully', resetToken });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error verifying OTP' });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    // 1. Verify the reset token
+    const decoded = jwt.verify(req.body.resetToken, JWT_SECRET);
+
+    // 2. Find the employee based on the decoded email
+    const employee = await EmployeeModel.findOne({ email: decoded.email });
+
+    if (!employee) {
+      return res.status(404).json({ message: 'No employee found with that email' });
+    }
+
+    // 3. Allow the employee to enter a new password
+    employee.password = req.body.password;
+    employee.resetPasswordOTP = undefined;
+    employee.resetPasswordOTPExpires = undefined;
+
+    try {
+      await employee.save();
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Error updating password' });
+    }
+
+    // 4. Send a confirmation email to the employee
+    // const transporter = nodemailer.createTransport({
+    //   // Your email transport configuration
+    //   service: 'gmail',
+    //   auth: {
+    //     user: 'sharon@ealphabits.com',
+    //     pass: 'garq gtyt qlcb fpzk'
+    //   }
+    // });
+
+    // const mailOptions = {
+    //   from: 'sharon@ealphabits.com',
+    //   to: employee.email,
+    //   subject: 'Your password has been changed',
+    //   text: 'Hello,\n\n' +
+    //     'This is a confirmation that the password for your account has just been changed.'
+    // };
+
+    // try {
+    //   await transporter.sendMail(mailOptions);
+    // } catch (err) {
+    //   console.error(err);
+    //   return res.status(500).json({ message: 'Error sending password confirmation email' });
+    // }
+
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error resetting password' });
+  }
+};
+
 
 module.exports = {
   updateEmployee,
@@ -732,8 +936,12 @@ module.exports = {
   updateEmployeeInfo,
   getEmployeeByTimeSlot,
   employeeSignin,
-  resetEmployeePassword,
+  // resetEmployeePassword,
   setEmployeeToggle,
   getEmployeeForProfilePage,
-  // updateEmployeeForProfilePage,
+
+  //auth reset password
+  generateResetPasswordOTP,
+  verifyOTP,
+  resetPassword,
 };

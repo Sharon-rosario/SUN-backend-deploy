@@ -10,18 +10,28 @@ const {
   getEmployeeById,
   getEmployeeByTimeSlot,
   employeeSignin,
-  resetEmployeePassword,
+  // resetEmployeePassword,
   setEmployeeToggle,
   updateEmployee,
-  getEmployeeForProfilePage
+  getEmployeeForProfilePage,
+
+  generateResetPasswordOTP,
+  verifyOTP,
+  resetPassword,
 } = require("../controllers/EmployeeController");
+
+//reset passoword
+router.post('/generateOtp', generateResetPasswordOTP) // {email}
+router.post('/verifyOtp', verifyOTP)
+router.post('/resetPassword', resetPassword)
+
 
 router.get("/profile/:id", getEmployeeForProfilePage)
 router.route("/toggle"). post(setEmployeeToggle)
 router.get("/fetch", fetchEmployees)
 router.get("/available", getAvailableEmployees);
 router.get("/by-timeslot", getEmployeeByTimeSlot);
-router.put("/resetPassword/", resetEmployeePassword);
+// router.put("/resetPassword/", resetEmployeePassword);
 router.route("/").get(getEmployees).post(createEmployee);
 router.route("/:id").get(getEmployeeById).delete(deleteEmployee).put(updateEmployee);
 router.route("/:employeeId").put(updateEmployeeInfo);
