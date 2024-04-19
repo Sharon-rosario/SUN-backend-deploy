@@ -18,13 +18,21 @@ const {
   generateResetPasswordOTP,
   verifyOTP,
   resetPassword,
+
+  addImage,
+  getEmployeeImage
 } = require("../controllers/EmployeeController");
+const { upload, errorHandler } = require('../utils/employeeUploadMiddleware');
 
 //reset passoword
 router.post('/generateOtp', generateResetPasswordOTP) // {email}
 router.post('/verifyOtp', verifyOTP)
 router.post('/resetPassword', resetPassword)
 
+//image handling routes
+// for adding and also updating
+router.post('/image/:employeeId', upload.single('image'), addImage, errorHandler);
+router.get('/image/:employeeId', getEmployeeImage);
 
 router.get("/profile/:id", getEmployeeForProfilePage)
 router.route("/toggle"). post(setEmployeeToggle)

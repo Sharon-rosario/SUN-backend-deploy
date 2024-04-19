@@ -6,12 +6,24 @@ const {
   deletePatient,
   updatePatientInfo,
   getPatientById,
+
+  getPatientImage,
+  AddPatientImage
 } = require("../controllers/PatientController");
+const { upload, errorHandler } = require('../utils/patientUploadMiddleware');
+
+
+//image handling routes
+// for adding and also updating 
+router.post('/image/:patientId', upload.single('image'), AddPatientImage, errorHandler);
+router.get('/image/:patientId', getPatientImage);
+
 
 router.route("/").get(getPatients).post(createPatient);
 router.route("/:id").get(getPatientById).delete(deletePatient);
 // router.route("/:patientId/update-info").post(updatePatientInfo);
 router.put('/:id', updatePatientInfo);
+
 
 /**
  * @swagger

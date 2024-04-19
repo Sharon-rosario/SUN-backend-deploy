@@ -11,13 +11,22 @@ const Company = require("../models/CompanyModel");
 const ObjectId = mongoose.Types.ObjectId;
 const TimeSlot = require("../models/TimeSlotModel");
 const nodemailer = require('nodemailer');
+const { deleteImage } = require('../utils/imageDeleteHelper');
+const path = require('path');
 
 
 // Get all employee
 const getEmployees = asyncHandler(async (req, res) => {
   try {
     // const employees = await Employee.find({}, { password: 0 }).populate("timeSlots");
-    const employees = await Employee.find({}).populate("timeSlots")
+    const employees = await Employee.find({})
+    .populate("mondayTimeSlots")
+    .populate("sundayTimeSlots")
+    .populate("tuesdayTimeSlots")
+    .populate("wednesdayTimeSlots")
+    .populate("thursdayTimeSlots")
+    .populate("fridayTimeSlots")
+    .populate("saturdayTimeSlots")
       .populate("company");
 
     // const employees = await Employee.find({})
@@ -38,7 +47,14 @@ const getEmployeeById = asyncHandler(async (req, res) => {
     // const employee = await Employee.findById(employeeId).select({ password: 0 }).populate("timeSlots")
       // .populate("company");
 ;
-    const employee = await Employee.findById(employeeId).populate("timeSlots")
+    const employee = await Employee.findById(employeeId)
+    .populate("mondayTimeSlots")
+    .populate("sundayTimeSlots")
+    .populate("tuesdayTimeSlots")
+    .populate("wednesdayTimeSlots")
+    .populate("thursdayTimeSlots")
+    .populate("fridayTimeSlots")
+    .populate("saturdayTimeSlots")
       .populate("company");
 ;
     // Exclude the password field from the response
@@ -56,88 +72,12 @@ const getEmployeeById = asyncHandler(async (req, res) => {
 // Add new employee
 const createEmployee = asyncHandler(async (req, res) => {
   try {
-    const {
-      name,
-      password,
-      evv,
-      role,
-      phoneNumber,
-      email,
-      address,
-      relativeNameFirst,
-      relativeContactFirst,
-      relativeNameSecond,
-      relativeContactSecond,
-      availability,
-      timeSlots,
-      image,
-      units,
-      company,
-    } = req.body;
-
-    if (
-      !name ||
-      !evv ||
-      !password ||
-      !role ||
-      !phoneNumber ||
-      !email ||
-      !address ||
-      !relativeContactFirst ||
-      !relativeNameFirst ||
-      !availability ||
-      !timeSlots
-    ) {
-      res.status(400).json({ message: "Required fields are missing" });
-      return;
-    }
-
-    // Hash the password using bcrypt
-    // const hashedPassword = await bcrypt.hash(password, 10);
-
-    const existingContactNo = await Employee.findOne({ phoneNumber });
-    const existingEmail = await Employee.findOne({ email });
-
-    if (existingContactNo) {
-      res.status(422).json({
-        message:
-          "Contact Number already in use. Please enter a new number and try again",
-      });
-      return;
-    } else if (existingEmail) {
-      res.status(422).json({
-        message: "Email already in use. Please enter a new email and try again",
-      });
-      return;
-    }
-
-    const employee = await Employee.create({
-      name,
-      // password: hashedPassword,
-      password: password,
-      evv,
-      role,
-      phoneNumber,
-      email,
-      address,
-      relativeNameFirst,
-      relativeContactFirst,
-      relativeNameSecond: relativeNameSecond || "NA",
-      relativeContactSecond: relativeContactSecond || "NA",
-      availability,
-      timeSlots,
-      image,
-      units,
-      company
-    });
-
-    res.status(201).json({
-      message: "Entry added successfully",
-      employee,
-    });
+    console.log(req.body);
+    const emlpoyeeInfo = new Employee(req.body);
+    const createdEmployee = await emlpoyeeInfo.save();
+    res.status(200).json(createdEmployee);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -153,6 +93,10 @@ const deleteEmployee = asyncHandler(async (req, res) => {
       throw new Error("Employee not found");
     }
 
+    if (employee.image) {
+      await deleteImage(employee.image, 'employeeImageUploads');
+    }
+
     await Employee.deleteOne({ _id: employeeId });
 
     res.status(200).json({
@@ -166,68 +110,19 @@ const deleteEmployee = asyncHandler(async (req, res) => {
 
 // Update fields of employee
 const updateEmployeeInfo = asyncHandler(async (req, res) => {
-  console.log("skdfjkshdfsdfjhsdfshdfsgdfsdf")
   try {
-    const { employeeId } = req.params;
-    const {
-      name,
-      password,
-      evv,
-      role,
-      phoneNumber,
-      email,
-      address,
-      relativeNameFirst,
-      relativeContactFirst,
-      relativeNameSecond,
-      relativeContactSecond,
-      availability,
-      timeSlots,
-      units,
-      image,
-    } = req.body;
+    const employeeInfo = await Employee.findById(req.params.id);
 
-    const employee = await Employee.findById(employeeId);
-
-    if (!employee) {
-      res.status(404);
-      throw new Error("Employee not found");
+    if (employeeInfo) {
+      // Update the entire homeEnvInfo object with req.body
+      Object.assign(employeeInfo, req.body);
+      const aidecareInfoData = await employeeInfo.save();
+      res.status(200).json(aidecareInfoData);
+    } else {
+      res.status(404).json({ message: "Passport supervisory Info Data info not found" });
     }
-
-    // if (password) {
-    //   const hashedPassword = await bcrypt.hash(password, 10);
-    //   employee.password = hashedPassword;
-    // }
-
-    employee.password = password;
-    employee.name = name;
-    employee.evv = evv;
-    employee.role = role;
-    employee.phoneNumber = phoneNumber;
-    employee.email = email;
-    employee.address = address;
-    employee.relativeNameFirst = relativeNameFirst;
-    employee.relativeContactFirst = relativeContactFirst;
-    employee.relativeNameSecond = relativeNameSecond
-      ? relativeNameSecond
-      : "NA";
-    employee.relativeContactSecond = relativeContactSecond
-      ? relativeContactSecond
-      : "NA";
-    employee.availability = availability;
-    employee.timeSlots = timeSlots;
-    employee.image = image;
-    employee.units = units;
-    await employee.save();
-
-    res.status(200).json({
-      message: `Employee data updated successfully`,
-      employee: employee,
-    });
   } catch (error) {
-    // Handle the error appropriately
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -645,7 +540,13 @@ const updateEmployee = async (req, res) => {
         // runValidators: true,
       }
     )
-    .populate("timeSlots")
+    .populate("sundayTimeSlots")
+    .populate("tuesdayTimeSlots")
+    .populate("mondayTimeSlots")
+    .populate("wednesdayTimeSlots")
+    .populate("thursdayTimeSlots")
+    .populate("fridayTimeSlots")
+    .populate("saturdayTimeSlots")
     .populate("company");
 
     if (!updatedEmployee) {
@@ -663,30 +564,37 @@ const updateEmployee = async (req, res) => {
 
 
 const getEmployeeForProfilePage = asyncHandler(async (req, res) => {
-  console.log('jsdghfjhsgdfhsdf')
-  const { id } = req.params; 
+  console.log('api hit ')
+  const { id } = req.params;
   try {
-    const employee = await Employee.findById(id, 'name email phoneNumber address image availability timeSlots').populate('timeSlots')
+    const employee = await Employee.findById(id)
+      .select('name company email phoneNumber address image sundayTimeSlots mondayTimeSlots tuesdayTimeSlots wednesdayTimeSlots thursdayTimeSlots fridayTimeSlots saturdayTimeSlots')
+      .populate('company sundayTimeSlots mondayTimeSlots tuesdayTimeSlots wednesdayTimeSlots thursdayTimeSlots fridayTimeSlots saturdayTimeSlots');
 
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });
     }
 
-    // Transform the employee's data to match your specific output format
-    const transformedEmployee = {
+    // As you want to send the data directly, the transformed structure will be returned in the JSON response
+    res.status(200).json({
+      id: employee._id,
       name: employee.name,
       email: employee.email,
       phoneNumber: employee.phoneNumber,
       address: employee.address,
       image: employee.image,
-      availability: employee.availability,
-      timeSlots: employee.timeSlots,
-    };
-
-    res.status(200).json(transformedEmployee);
+      company: employee.company,
+      sundayTimeSlots: employee.sundayTimeSlots,
+      mondayTimeSlots: employee.mondayTimeSlots,
+      tuesdayTimeSlots: employee.tuesdayTimeSlots,
+      wednesdayTimeSlots: employee.wednesdayTimeSlots,
+      thursdayTimeSlots: employee.thursdayTimeSlots,
+      fridayTimeSlots: employee.fridayTimeSlots,
+      saturdayTimeSlots: employee.saturdayTimeSlots,
+    });
   } catch (error) {
     console.error("Error fetching employee:", error);
-    res.status(500).json({ message: "Failed to fetch employee" });
+    res.status(500).json({ message: "Failed to fetch employee", error: error.message });
   }
 });
 
@@ -907,6 +815,103 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const addImage = asyncHandler(async (req, res) => {
+  console.log("employee image upload", req.file, req.params.employeeId);
+  try {
+    const { employeeId } = req.params;
+    if (req.file && employeeId) {
+      // First check if the employee exists
+      const existingEmployee = await EmployeeModel.findById(employeeId);
+      if (!existingEmployee) {
+        // If no employee found, send a 404 error
+        return res.status(404).json({ message: 'Employee data does not exist' });
+      }
+
+      // If employee exists, update with the new image path
+      const imagePath = req.file.filename;
+      const updatedEmployee = await EmployeeModel.findByIdAndUpdate(
+        employeeId,
+        { image: imagePath },
+        { new: true }
+      );
+
+      // If there was an existing image, delete it
+      if (existingEmployee.image) {
+        await deleteImage(existingEmployee.image, 'employeeImageUploads');
+      }
+
+      res.json({ message: 'Image uploaded successfully', updatedEmployee });
+    } else {
+      res.status(400).json({ message: 'Image file or employeeId is missing' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to upload image', error: error.message });
+  }
+});
+
+
+const getEmployeeImage = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+
+    // Find the employee in the database
+    const employee = await EmployeeModel.findById(employeeId);
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    // Check if the employee has an image
+    if (!employee.image) {
+      return res.status(404).json({ message: 'Employee has no image' });
+    }
+
+    // Construct the full file path
+    const uploadsDir = path.join(__dirname, '..', '/uploads/employeeImageUploads');
+    const filePath = path.join(uploadsDir, employee.image);
+
+    // Send the file
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send('Error sending file.');
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+// const updateImage = async (req, res) => {
+//   try {
+//     const { employeeId } = req.params;
+//     const existingEmployee = await EmployeeModel.findById(employeeId);
+
+//     if (!existingEmployee) {
+//       return res.status(404).json({ message: 'Employee data does not exist' });
+//     }
+
+//     // Delete the existing image
+//     if (existingEmployee.image) {
+//       await deleteImage(existingEmployee.image, 'employeeImageUploads');
+//     }
+
+//     // Update the employee with the new image path
+//     const imagePath = req.file.path;
+//     const updatedEmployee = await EmployeeModel.findByIdAndUpdate(
+//       employeeId,
+//       { image: imagePath },
+//       { new: true }
+//     );
+
+//     res.json({ message: 'Image updated successfully', updatedEmployee });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Failed to update image', error: error.message });
+//   }
+// };
+
 
 module.exports = {
   updateEmployee,
@@ -927,4 +932,8 @@ module.exports = {
   generateResetPasswordOTP,
   verifyOTP,
   resetPassword,
+// image handling controllers
+  addImage,
+  getEmployeeImage,
+  // updateImage,
 };

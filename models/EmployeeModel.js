@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const EmployeeSchema = mongoose.Schema(
+const EmployeeSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -53,12 +53,54 @@ const EmployeeSchema = mongoose.Schema(
       type: String,
       // required: [true, `Please add the relative 2 contact no.`],
     },
-    availability: {
-      type: [String],
-      default: [],
-      required: [true, `Must have atleast one day inside availability array`],
-    },
-    timeSlots: [
+    // availability: {
+    //   type: [String],
+    //   default: [],
+    //   required: [true, `Must have atleast one day inside availability array`],
+    // },
+    // timeSlots: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "TimeSlot",
+    //   },
+    // ],
+    sundayTimeSlots: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "TimeSlot",
+      },
+    ],
+    mondayTimeSlots: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "TimeSlot",
+      },
+    ],
+    tuesdayTimeSlots: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "TimeSlot",
+      },
+    ],
+    wednesdayTimeSlots: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "TimeSlot",
+      },
+    ],
+    thursdayTimeSlots: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "TimeSlot",
+      },
+    ],
+    fridayTimeSlots: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "TimeSlot",
+      },
+    ],
+    saturdayTimeSlots: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "TimeSlot",

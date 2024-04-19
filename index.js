@@ -58,14 +58,19 @@ app.use('/api/referral-que',require('./routes/NurseFormsRoutes/ReferralQueRoutes
 app.use((req, res) => {
   res.status(404).json({ message: 'API endpoint not found' });
 });
-
 // Serve Swagger UI
 app.use('/api', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 app.use(errorHandler);
 
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+// localhost:9000/api/employee/image/65e16793c182b437950bc37f
+// localhost:9000/api/patients/image/65e1662bc182b437950bc35f
+// localhost:9000/api/incident-hha/image/65e8180a19fe6d7dc1d76ae8
+
 
 // nurse - suraj(0) and peter(1)
 // hha - rusdra(1) and test(0)

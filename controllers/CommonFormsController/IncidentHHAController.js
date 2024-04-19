@@ -3,6 +3,7 @@ const asyncHandler = require("express-async-handler");
 const formatDate = require("../../utils/formatDate");
 const formatTime = require("../../utils/formatTime");
 const path = require('path');
+const { deleteImage } = require("../../utils/imageDeleteHelper");
 
 const createForm = asyncHandler(async (req, res) => {
   try {
@@ -49,32 +50,7 @@ const createForm = asyncHandler(async (req, res) => {
   }
 });
 
-const addImage = asyncHandler(async (req, res) => {
-  console.log("image uplaod",req.file, req.params.assignmentId );
-  try {
-    if (req.file && req.params.assignmentId) {
-      const assignmentId = req.params.assignmentId;
-      const imagePath = req.file.path; 
-      // Find the document by assignmentId (foreign key) and update it
-      const updatedIncidentHHAForm = await IncidentHHAForm.findOneAndUpdate(
-        { assignmentId: assignmentId }, 
-        { diagramIndicatingInjury: imagePath }, 
-        { new: true } 
-      );
 
-      if (!updatedIncidentHHAForm) {
-        return res.status(404).json({ message: 'IncidentHHAForm not found for the given assignmentId' });
-      }
-
-      res.json({ message: 'Image uploaded successfully', updatedIncidentHHAForm });
-    } else {
-      res.status(400).json({ message: 'Image file or assignmentId is missing' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Failed to upload image', error: error.message });
-  }
-});
 
 const getAllForms = asyncHandler(async (req, res) => {
   try {
@@ -115,30 +91,6 @@ const getFormByAssignmentId = asyncHandler(async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 });
-
-const getIncidentHHAImage = async (req, res) => {
-  console.log('API hit 1');
-  try {
-    const { imagePath } = req.params;
-    console.log('API hit 2');
-    const fileName = decodeURIComponent(imagePath);
-    console.log('API hit 3');
-    // Move up one directory to get out of 'controllers' and then into 'uploads'
-    const filePath = path.join(__dirname, '..', '../uploads', fileName);
-    console.log('File path:', filePath);
-    console.log('API hit 4');
-    res.sendFile(filePath, (err) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send('Error sending file.');
-      }
-    });
-    console.log('API hit 5');
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 
 const updateFormById = asyncHandler(async (req, res) => {
   console.log("hitttttttttttttttttt");
@@ -191,6 +143,77 @@ const deleteFormByAssignmentId = asyncHandler(async (req, res) => {
   }
 });
 
+const AddIncidentImage = asyncHandler(async (req, res) => {
+  console.log("incident image uploaded", req.file, req.params.assignmentId);
+  try {
+    const { assignmentId } = req.params;
+    if (req.file && assignmentId) {
+      // First check if the incident form exists by using assignmentId as a filter
+      const existingIncidentFormData = await IncidentHHAForm.findOne({
+        assignmentId: assignmentId,
+      });
+      if (!existingIncidentFormData) {
+        // If no incident form found, send a 404 error
+        return res.status(404).json({ message: "IncidentHHAForm data does not exist" });
+      }
+      // If incident form exists, update with the new image path
+      const imagePath = req.file.filename;
+      console.log("incident imagePath", imagePath);
+      const updatedIncidentFormData = await IncidentHHAForm.findOneAndUpdate(
+        { assignmentId: assignmentId },
+        { $set: { diagramIndicatingInjury: imagePath } }, // Update the correct field
+        { new: true }
+      );
+      // If there was an existing image, delete it
+      if (
+        existingIncidentFormData.diagramIndicatingInjury &&
+        existingIncidentFormData.diagramIndicatingInjury !== ""
+      ) {
+        await deleteImage(
+          existingIncidentFormData.diagramIndicatingInjury,
+          "incidentImageUploads"
+        );
+      }
+      res.json({ message: "Image uploaded successfully", updatedIncidentFormData });
+    } else {
+      res.status(400).json({ message: "Image file or assignmentId is missing" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to upload image", error: error.message });
+  }
+});
+
+
+
+const getIncidentHHAImage = async (req, res) => {
+  try {
+    const { assignmentId } = req.params;
+    // Find the incidentData in the database using assignmentId as a filter
+    const incidentData = await IncidentHHAForm.findOne({ assignmentId: assignmentId });
+    if (!incidentData) {
+      return res.status(404).json({ message: 'IncidentHHAForm not found' });
+    }
+    // Check if the incidentData has an image
+    if (!incidentData.diagramIndicatingInjury) {
+      return res.status(404).json({ message: 'IncidentHHAForm has no image' });
+    }
+    // Construct the full file path
+    const uploadsDir = path.join(__dirname, '..', '../uploads/incidentImageUploads');
+    const filename = incidentData.diagramIndicatingInjury;
+    const filePath = path.join(uploadsDir, filename);
+    // Send the file
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send('Error sending file.');
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createForm,
   getAllForms,
@@ -199,6 +222,8 @@ module.exports = {
   deleteFormById,
   getFormByAssignmentId,
   deleteFormByAssignmentId,
+
+  //image controllers
   getIncidentHHAImage,
-  addImage
+  AddIncidentImage
 };

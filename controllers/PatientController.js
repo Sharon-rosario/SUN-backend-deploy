@@ -1,5 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const Patient = require("../models/PatientModel");
+const { deleteImage } = require("../utils/imageDeleteHelper");
+const path = require('path');
+
 
 // Get all patients
 const getPatients = asyncHandler(async (req, res) => {
@@ -151,6 +154,7 @@ const getPatientById = asyncHandler(async (req, res) => {
 
 // CREATE a new patient
 const createPatient = async (req, res) => {
+  console.log(req.body)
   try {
     const {
       patient_name,
@@ -181,125 +185,7 @@ const createPatient = async (req, res) => {
       days,
       programs,
       image,
-      liveAlone,
-      liveWithOther,
-      aloneDuringDay,
-      bedBound,
-      bedRest,
-      upAsTolerated,
-      amputee,
-      amputeeInfo,
-      partialWeightBearing,
-      partialWeightBearingR,
-      partialWeightBearingL,
-      normalWeightBearing,
-      normalWeightBearingR,
-      normalWeightBearingL,
-      fallPrecautions,
-      speechDeficit,
-      visionDeficit,
-      glasses,
-      contacts,
-      visionOther,
-      hearingDeficit,
-      hearingAid,
-      dentures,
-      upper,
-      lower,
-      partial,
-      forgetfull,
-      urinaryCatheter,
-      prosthesis,
-      prosthesisInfo,
-      allergies,
-      allergiesInfo,
-      diabetic,
-      doNotCutNails,
-      diet,
-      dietInfo,
-      seizurePrecaution,
-      proneToFactures,
-      precautionOther,
-      bath_tubShowerEveryVisit,
-      bath_tubShowerWeekly,
-      bath_bedBathPartial,
-      bath_bedBathComplete,
-      bath_bedBathEveryVisit,
-      bath_bedBathWeekly,
-      bath_assistBathChairEveryVisit,
-      bath_assistBathChairWeekly,
-      bathOtherInfo,
-      personalCareEveryVisit,
-      personalCareWeekly,
-      personalCare_assistWithDressingEveryVisit,
-      personalCare_assistWithDressingWeekly,
-      personalCare_groomHairEveryVisit,
-      personalCare_groomHairWeekly,
-      personalCare_shampooEveryVisit,
-      personalCare_shampooWeekly,
-      personalCare_skinCareEveryVisit,
-      personalCare_skinCareWeekly,
-      personalCare_teethCareEveryVisit,
-      personalCare_teethCareWeekly,
-      personalCare_otherEveryVisit,
-      personalCare_otherWeekly,
-      personalCare_otherInfo,
-      procedures_toiletingAssistEveryVisit,
-      procedures_toiletingAssistWeekly,
-      procedures_catheterCareEveryVisit,
-      procedures_catheterCareWeekly,
-      procedures_ostomyCareEveryVisit,
-      procedures_ostomyCareWeekly,
-      procedures_medicationReminderEveryVisit,
-      procedures_medicationReminderWeekly,
-      procedures_otherEveryVisit,
-      procedures_otherWeekly,
-      procedures_otherInfo,
-      activity_assistWithAmbulation,
-      activity_assistWithWheelChair,
-      activity_assistWithWalker,
-      activity_assistWithCane,
-      activity_assistWithEveryVisit,
-      activity_assistWithWeekly,
-      activity_mobilityAssistChair,
-      activity_mobilityAssistBed,
-      activity_mobilityAssistShower,
-      activity_mobilityAssistTub,
-      activity_mobilityAssistEveryVisit,
-      activity_mobilityAssistWeekly,
-      activity_exercisePerPTOT,
-      activity_exercisePerCarePlan,
-      activity_exerciseEveryVisit,
-      activity_exerciseWeekly,
-      activity_otherEveryVisit,
-      activity_otherWeekly,
-      activity_otherInfo,
-      nutrition_mealPreparationEveryVisit,
-      nutrition_mealPreparationWeekly,
-      nutrition_assistWithFeedingEveryVisit,
-      nutrition_assistWithFeedingWeekly,
-      nutrition_limitFluid,
-      nutrition_encourageFluid,
-      nutrition_fluidEveryVisit,
-      nutrition_fluidWeekly,
-      nutrition_groceryShoppingEveryVisit,
-      nutrition_groceryShoppingWeekly,
-      nutrition_otherEveryVisit,
-      nutrition_otherWeekly,
-      nutrition_otherInfo,
-      other_laundryEveryVisit,
-      other_laundryWeekly,
-      other_bedroomKeeping,
-      other_bathroomKeeping,
-      other_kitchenKeeping,
-      other_bedLinenKeeping,
-      other_houseKeepingEveryVisit,
-      other_houseKeepingWeekly,
-      other_equipmentCareEveryVisit,
-      other_equipmentCareWeekly,
-      other_transportationEveryVisit,
-      other_transportationWeekly,
-      other_otherInfo,
+      
       // ... include other fields as needed
     } = req.body;
 
@@ -337,125 +223,7 @@ const createPatient = async (req, res) => {
       // timeSlots,
       programs,
       image,
-      liveAlone,
-      liveWithOther,
-      aloneDuringDay,
-      bedBound,
-      bedRest,
-      upAsTolerated,
-      amputee,
-      amputeeInfo,
-      partialWeightBearing,
-      partialWeightBearingR,
-      partialWeightBearingL,
-      normalWeightBearing,
-      normalWeightBearingR,
-      normalWeightBearingL,
-      fallPrecautions,
-      speechDeficit,
-      visionDeficit,
-      glasses,
-      contacts,
-      visionOther,
-      hearingDeficit,
-      hearingAid,
-      dentures,
-      upper,
-      lower,
-      partial,
-      forgetfull,
-      urinaryCatheter,
-      prosthesis,
-      prosthesisInfo,
-      allergies,
-      allergiesInfo,
-      diabetic,
-      doNotCutNails,
-      diet,
-      dietInfo,
-      seizurePrecaution,
-      proneToFactures,
-      precautionOther,
-      bath_tubShowerEveryVisit,
-      bath_tubShowerWeekly,
-      bath_bedBathPartial,
-      bath_bedBathComplete,
-      bath_bedBathEveryVisit,
-      bath_bedBathWeekly,
-      bath_assistBathChairEveryVisit,
-      bath_assistBathChairWeekly,
-      bathOtherInfo,
-      personalCareEveryVisit,
-      personalCareWeekly,
-      personalCare_assistWithDressingEveryVisit,
-      personalCare_assistWithDressingWeekly,
-      personalCare_groomHairEveryVisit,
-      personalCare_groomHairWeekly,
-      personalCare_shampooEveryVisit,
-      personalCare_shampooWeekly,
-      personalCare_skinCareEveryVisit,
-      personalCare_skinCareWeekly,
-      personalCare_teethCareEveryVisit,
-      personalCare_teethCareWeekly,
-      personalCare_otherEveryVisit,
-      personalCare_otherWeekly,
-      personalCare_otherInfo,
-      procedures_toiletingAssistEveryVisit,
-      procedures_toiletingAssistWeekly,
-      procedures_catheterCareEveryVisit,
-      procedures_catheterCareWeekly,
-      procedures_ostomyCareEveryVisit,
-      procedures_ostomyCareWeekly,
-      procedures_medicationReminderEveryVisit,
-      procedures_medicationReminderWeekly,
-      procedures_otherEveryVisit,
-      procedures_otherWeekly,
-      procedures_otherInfo,
-      activity_assistWithAmbulation,
-      activity_assistWithWheelChair,
-      activity_assistWithWalker,
-      activity_assistWithCane,
-      activity_assistWithEveryVisit,
-      activity_assistWithWeekly,
-      activity_mobilityAssistChair,
-      activity_mobilityAssistBed,
-      activity_mobilityAssistShower,
-      activity_mobilityAssistTub,
-      activity_mobilityAssistEveryVisit,
-      activity_mobilityAssistWeekly,
-      activity_exercisePerPTOT,
-      activity_exercisePerCarePlan,
-      activity_exerciseEveryVisit,
-      activity_exerciseWeekly,
-      activity_otherEveryVisit,
-      activity_otherWeekly,
-      activity_otherInfo,
-      nutrition_mealPreparationEveryVisit,
-      nutrition_mealPreparationWeekly,
-      nutrition_assistWithFeedingEveryVisit,
-      nutrition_assistWithFeedingWeekly,
-      nutrition_limitFluid,
-      nutrition_encourageFluid,
-      nutrition_fluidEveryVisit,
-      nutrition_fluidWeekly,
-      nutrition_groceryShoppingEveryVisit,
-      nutrition_groceryShoppingWeekly,
-      nutrition_otherEveryVisit,
-      nutrition_otherWeekly,
-      nutrition_otherInfo,
-      other_laundryEveryVisit,
-      other_laundryWeekly,
-      other_bedroomKeeping,
-      other_bathroomKeeping,
-      other_kitchenKeeping,
-      other_bedLinenKeeping,
-      other_houseKeepingEveryVisit,
-      other_houseKeepingWeekly,
-      other_equipmentCareEveryVisit,
-      other_equipmentCareWeekly,
-      other_transportationEveryVisit,
-      other_transportationWeekly,
-      other_otherInfo,
+      
       // ... include other fields as needed
     });
 
@@ -526,6 +294,10 @@ const deletePatient = asyncHandler(async (req, res) => {
     throw new Error("Patient not found");
   }
 
+  if (patient.image) {
+    await deleteImage(employee.image, 'employeeImageUploads');
+  }
+
   await Patient.deleteOne({ _id: patientId });
 
   res.status(200).json({
@@ -533,10 +305,88 @@ const deletePatient = asyncHandler(async (req, res) => {
   });
 });
 
+
+const AddPatientImage = asyncHandler(async (req, res) => {
+  console.log("patient image uploaded", req.file, req.params.patientId);
+  try {
+    const { patientId } = req.params;
+    if (req.file && patientId) {
+      // First check if the patient exists
+      const existingPatient = await Patient.findById(patientId);
+      if (!existingPatient) {
+        // If no patient found, send a 404 error
+        return res.status(404).json({ message: 'Patient data does not exist' });
+      }
+
+
+      // If patient exists, update with the new image path
+      const imagePath = req.file.filename;
+      console.log("patient imagePath", imagePath)
+      const updatedPatient = await Patient.findByIdAndUpdate(
+        patientId,
+        { image: imagePath },
+        { new: true }
+      );
+
+      // If there was an existing image, delete it
+      if (existingPatient.image && existingPatient.image !== "") {
+        await deleteImage(existingPatient.image, 'patientImageUploads');
+      }
+
+      res.json({ message: 'Image uploaded successfully', updatedPatient });
+    } else {
+      res.status(400).json({ message: 'Image file or patientId is missing' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to upload image', error: error.message });
+  }
+});
+
+const getPatientImage = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+
+    // Find the patient in the database
+    const patient = await Patient.findById(patientId);
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    // Check if the patient has an image
+    if (!patient.image) {
+      return res.status(404).json({ message: 'Patient has no image' });
+    }
+
+    // Construct the full file path
+    const uploadsDir = path.join(__dirname, '..', '/uploads/patientImageUploads');
+    const filePath = path.join(uploadsDir, patient.image);
+
+    // Send the file
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send('Error sending file.');
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  AddPatientImage,
+  getPatientImage,
+};
+
+
 module.exports = {
   getPatients,
   createPatient,
   deletePatient,
   getPatientById,
   updatePatientInfo,
+
+  AddPatientImage,
+  getPatientImage
 };

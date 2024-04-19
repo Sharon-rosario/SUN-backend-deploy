@@ -3,7 +3,7 @@ const path = require('path');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '..', 'uploads'));
+    cb(null, path.join(__dirname, '..', './uploads/patientImageUploads'));
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
@@ -33,6 +33,7 @@ const errorHandler = (err, req, res, next) => {
   }
   next();
 };
+
 
 module.exports = {
   upload,
